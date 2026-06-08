@@ -19,15 +19,15 @@ echo "✓ Python 3 found: $(python3 --version)"
 echo
 echo "📦 Installing Python dependencies..."
 
-if pip3 install --user garminconnect fitparse gpxpy 2>/dev/null; then
+if pip3 install --user garminconnect curl_cffi fitparse gpxpy 2>/dev/null; then
     echo "✓ Dependencies installed (--user)"
-elif pip3 install --break-system-packages garminconnect fitparse gpxpy 2>/dev/null; then
+elif pip3 install --break-system-packages garminconnect curl_cffi fitparse gpxpy 2>/dev/null; then
     echo "✓ Dependencies installed (--break-system-packages)"
-elif pip3 install garminconnect fitparse gpxpy 2>/dev/null; then
+elif pip3 install garminconnect curl_cffi fitparse gpxpy 2>/dev/null; then
     echo "✓ Dependencies installed (system-wide)"
 else
     echo "❌ Failed to install Python dependencies"
-    echo "   Try manually: pip3 install --user garminconnect fitparse gpxpy"
+    echo "   Try manually: pip3 install --user garminconnect curl_cffi fitparse gpxpy"
     exit 1
 fi
 

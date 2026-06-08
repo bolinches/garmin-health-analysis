@@ -59,4 +59,4 @@ You can use both the Clawdbot skill and the MCP server simultaneously! They shar
 - **Clawdbot**: Morning health summaries, weekly reports, automated tracking
 - **Claude Desktop**: Quick ad-hoc queries during the day
 
-Authentication tokens are shared at `~/.clawdbot/garmin-tokens.json` (or `~/.garmin-tokens.json`).
+Authentication tokens are shared at `~/.clawdbot/garmin/` (garth tokenstore).

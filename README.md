@@ -25,7 +25,7 @@ cd ~/.clawdbot/skills
 git clone https://github.com/eversonl/ClawdBot-garmin-health-analysis.git garmin-health-analysis
 
 # Install dependencies
-pip3 install garminconnect fitparse gpxpy
+pip3 install garminconnect curl_cffi fitparse gpxpy
 
 # Configure credentials and authenticate
 python3 scripts/garmin_auth.py login
