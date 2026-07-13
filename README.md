@@ -1,14 +1,24 @@
 # Garmin Health Analysis
 
-> **Talk to your Garmin data naturally** - "how did I sleep last night?", "what's my recovery like?", "show me my last run with splits"
+> Talk to your Garmin data naturally. Activity splits, sleep, HRV, Body Battery, training readiness, and more.
 
-Access 20+ metrics from your Garmin device: sleep stages, Body Battery, HRV, VO2 max, training readiness, body composition, SPO2, and more. Download FIT/GPX files, query elevation/pace at any point, and generate interactive health dashboards.
-
-**Forked from [eversonl/ClawdBot-garmin-health-analysis](https://github.com/eversonl/ClawdBot-garmin-health-analysis) and significantly extended.**
+**Forked from [eversonl/ClawdBot-garmin-health-analysis](https://github.com/eversonl/ClawdBot-garmin-health-analysis).** The original was a solid start but didn't cover what I needed — per-activity splits, auth resilience, extended metrics, and time-based queries. This version adds all of that.
 
 ---
 
-## 🚀 Installation
+## What's Different Here
+
+| Feature | Original | This Fork |
+|---------|----------|-----------|
+| Activity splits (per-km/lap HR + pace) | ❌ | ✅ |
+| Auth resilience (429 retry, token fallback, legacy migration) | ❌ | ✅ |
+| Time-based queries ("what was my HR at 3pm?") | ❌ | ✅ |
+| Extended metrics (VO2max, training readiness, endurance score) | ❌ | ✅ |
+| FIT/GPX file download and analysis | ❌ | ✅ |
+| Per-second activity detail queries | ❌ | ✅ |
+| Interactive HTML dashboards | ❌ | ✅ |
+
+## Installation
 
 ```bash
 # Install via clawdhub
@@ -17,111 +27,37 @@ clawdhub install garmin-health-analysis
 # Or manually
 cd ~/.clawdbot/skills
 git clone https://github.com/bolinches/garmin-health-analysis.git garmin-health-analysis
-
-# Install dependencies
 pip3 install garminconnect fitparse gpxpy
-
-# Configure credentials and authenticate
 python3 scripts/garmin_auth.py login
 ```
 
-**[📖 Full Setup Guide](SKILL.md)**
+Full setup guide in [SKILL.md](SKILL.md).
 
-## ⚡ Features
+## What You Can Do
 
-- **Natural language queries**: "How's my recovery this week?" → instant Body Battery analysis
-- **Sleep analysis**: Hours, stages (light/deep/REM), quality scores, trends
-- **Recovery tracking**: Body Battery, HRV, training readiness, stress levels
-- **Workout data**: Activities by type, calories, duration, pace, elevation
-- **Health metrics**: Resting heart rate, VO2 max, body composition, SPO2
-- **Activity files**: Download FIT/GPX for detailed route and performance analysis
-- **Interactive charts**: Beautiful HTML dashboards with Chart.js visualizations
-- **Science-backed insights**: Interpret trends with expert analysis framework
+- "How did I sleep last night?" — sleep hours, stages, score
+- "Show me my last run with splits" — per-km pace, HR, cadence
+- "What's my recovery like this week?" — Body Battery, HRV, readiness
+- "Is my VO2max improving?" — trend over time
+- "Download the GPX for Sunday's run" — route data
+- "What was my heart rate at 3pm yesterday?" — time-based queries
 
-## 📊 Example Queries
-
-> "How did I sleep last night?"
-> 
-> "Show me my health dashboard for the last month"
-> 
-> "Is my HRV improving?"
-> 
-> "What was my fastest speed during yesterday's bike ride?"
-> 
-> "How's my recovery vs. training load balance?"
-> 
-> "Download the GPX file for my Sunday run"
-
-## 🛠️ Key Metrics
-
-| Metric | Range | What It Means |
-|--------|-------|---------------|
-| **Body Battery** | 0-100 | Garmin's recovery score (higher = more energy) |
-| **Sleep Score** | 0-100 | Overall sleep quality (90+ = excellent) |
-| **HRV** | 20-200+ ms | Heart rate variability (higher = better recovery) |
-| **Resting HR** | 40-80 bpm | Lower is generally better (athletes: 40-60) |
-| **Stress** | Low/Med/High | Based on HRV throughout the day |
-
-## 📦 What's Included
+## What's Included
 
 ```
-garmin-health-analysis/
-├── SKILL.md                       # Clawdbot setup & usage
-├── README.md                      # This file
-├── install.sh                     # Automated installation script
-├── scripts/
-│   ├── garmin_auth.py            # Authentication helper
-│   ├── garmin_data.py            # Fetch health metrics (JSON)
-│   ├── garmin_chart.py           # Generate HTML charts
-│   ├── garmin_data_extended.py   # Extended metrics (VO2, readiness, etc.)
-│   ├── garmin_activity_files.py  # Download FIT/GPX files
-│   └── garmin_query.py           # Time-based queries
-├── references/
-│   ├── health_analysis.md        # Metric interpretation guide
-│   ├── api.md                    # Garmin Connect API docs
-│   └── extended_capabilities.md  # Advanced features
-└── config.example.json           # Credentials template
+scripts/
+├── garmin_auth.py              # Login, token refresh, credential resolution
+├── garmin_data.py              # Core metrics: sleep, HRV, Body Battery, activities
+├── garmin_data_extended.py     # VO2max, training readiness, endurance score
+├── garmin_activity_files.py    # FIT/GPX download and analysis
+├── garmin_query.py             # Time-based queries
+└── garmin_chart.py             # HTML dashboard generation
 ```
 
-## 🔒 Privacy & Security
+## License
 
-- Credentials stored locally (never sent to third parties)
-- Session tokens auto-refresh (no repeated logins)
-- Connects only to Garmin's official API
-- No cloud storage or external data sharing
-- Open source - audit the code yourself
+Apache 2.0. See [LICENSE](LICENSE).
 
-## 📚 Documentation
+## Credits
 
-- **[SKILL.md](SKILL.md)** - Complete Clawdbot setup, commands, troubleshooting
-- **[references/health_analysis.md](references/health_analysis.md)** - Science-backed metric interpretation
-- **[references/api.md](references/api.md)** - Garmin Connect API details
-- **[references/extended_capabilities.md](references/extended_capabilities.md)** - Advanced features
-
-## 🐛 Troubleshooting
-
-**Authentication issues?**
-- Run `python3 scripts/garmin_auth.py login` to refresh tokens
-- Check credentials in config.json or environment variables
-- Try logging into Garmin Connect web to verify account
-
-**Missing data?**
-- Some metrics require specific devices (Body Battery needs HRV-capable watches)
-- Check device was worn during the time period
-- New accounts may have limited history
-
-**Rate limits?**
-- Garmin limits API requests - wait a few minutes and try again
-- Batch queries when possible (use `summary` instead of individual calls)
-
-## 🙏 Credits
-
-- **Original author**: EversonL
-- **License**: Apache 2.0
-- **Dependencies**: [python-garminconnect](https://github.com/cyberjunky/python-garminconnect), fitparse, gpxpy
-
-## 🔗 Links
-
-- **Clawdbot**: [clawdbot.com](https://clawdbot.com)
-- **ClawdHub**: [clawdhub.com](https://clawdhub.com)
-- **Garmin Connect**: [connect.garmin.com](https://connect.garmin.com)
+Original by EversonL. Extended by bolinches.
