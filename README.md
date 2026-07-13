@@ -1,20 +1,14 @@
-# Garmin Health Analysis - Clawdbot Skill
+# Garmin Health Analysis
 
-> **Talk to your Garmin data naturally** - "what was my fastest speed snowboarding?", "how did I sleep last night?", "what was my heart rate at 3pm?"
+> **Talk to your Garmin data naturally** - "how did I sleep last night?", "what's my recovery like?", "show me my last run with splits"
 
 Access 20+ metrics from your Garmin device: sleep stages, Body Battery, HRV, VO2 max, training readiness, body composition, SPO2, and more. Download FIT/GPX files, query elevation/pace at any point, and generate interactive health dashboards.
 
-## 🔵 Looking for Claude Desktop? 
-
-**This is the Clawdbot skill repo.** For standard Claude Desktop, use the dedicated MCP server:
-
-👉 **[garmin-health-mcp-server](https://github.com/eversonl/garmin-health-mcp-server)** - Node.js MCP server for Claude Desktop
+**Forked from [eversonl/ClawdBot-garmin-health-analysis](https://github.com/eversonl/ClawdBot-garmin-health-analysis) and significantly extended.**
 
 ---
 
-## 🚀 Clawdbot Installation
-
-**Best for**: Automated health monitoring, scheduled reports, proactive check-ins
+## 🚀 Installation
 
 ```bash
 # Install via clawdhub
@@ -22,10 +16,10 @@ clawdhub install garmin-health-analysis
 
 # Or manually
 cd ~/.clawdbot/skills
-git clone https://github.com/eversonl/ClawdBot-garmin-health-analysis.git garmin-health-analysis
+git clone https://github.com/bolinches/garmin-health-analysis.git garmin-health-analysis
 
 # Install dependencies
-pip3 install garminconnect curl_cffi fitparse gpxpy
+pip3 install garminconnect fitparse gpxpy
 
 # Configure credentials and authenticate
 python3 scripts/garmin_auth.py login
@@ -45,8 +39,6 @@ python3 scripts/garmin_auth.py login
 - **Science-backed insights**: Interpret trends with expert analysis framework
 
 ## 📊 Example Queries
-
-**Clawdbot or Claude Desktop:**
 
 > "How did I sleep last night?"
 > 
@@ -106,9 +98,6 @@ garmin-health-analysis/
 - **[references/api.md](references/api.md)** - Garmin Connect API details
 - **[references/extended_capabilities.md](references/extended_capabilities.md)** - Advanced features
 
-### Looking for Claude Desktop?
-See **[garmin-health-mcp-server](https://github.com/eversonl/garmin-health-mcp-server)** for the dedicated MCP server (you can use both!)
-
 ## 🐛 Troubleshooting
 
 **Authentication issues?**
@@ -127,9 +116,8 @@ See **[garmin-health-mcp-server](https://github.com/eversonl/garmin-health-mcp-s
 
 ## 🙏 Credits
 
-- **Author**: EversonL & Claude
-- **Version**: 1.2.0
-- **License**: MIT
+- **Original author**: EversonL
+- **License**: Apache 2.0
 - **Dependencies**: [python-garminconnect](https://github.com/cyberjunky/python-garminconnect), fitparse, gpxpy
 
 ## 🔗 Links
@@ -137,15 +125,3 @@ See **[garmin-health-mcp-server](https://github.com/eversonl/garmin-health-mcp-s
 - **Clawdbot**: [clawdbot.com](https://clawdbot.com)
 - **ClawdHub**: [clawdhub.com](https://clawdhub.com)
 - **Garmin Connect**: [connect.garmin.com](https://connect.garmin.com)
-
----
-
-## 💖 Support This Project
-
-If you find this skill useful, consider supporting its development:
-
-<a href="https://buymeacoffee.com/leeev" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
-
----
-
-**Questions?** Open an issue on GitHub or ask in the Clawdbot Discord!
