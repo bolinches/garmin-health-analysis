@@ -2,7 +2,7 @@
 
 > Talk to your Garmin data naturally. Activity splits, sleep, HRV, Body Battery, training readiness, and more.
 
-**Forked from [eversonl/ClawdBot-garmin-health-analysis](https://github.com/eversonl/ClawdBot-garmin-health-analysis).** The original was a solid start but didn't cover what I needed — per-activity splits, auth resilience, extended metrics, and time-based queries. This version adds all of that.
+**Forked from [eversonl/ClawdBot-garmin-health-analysis](https://github.com/eversonl/ClawdBot-garmin-health-analysis).** The original was a solid start but didn't cover what I needed — per-activity splits, auth resilience, extended metrics, and time-based queries. This version adds all of that. ALso original version seems to be outadated for over 6 months
 
 ---
 
