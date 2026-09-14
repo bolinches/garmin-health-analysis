@@ -139,10 +139,15 @@ def _do_login(email, password):
         # skip_strategies lives on the inner Client, NOT on the Garmin object,
         # and only exists in garminconnect >= 0.3.6 (absent in 0.3.3).
         # Assigning it on the Garmin object is silently discarded.
+        #
+        # Skip ONLY the two mobile strategies, which Garmin rate-limits (429)
+        # from this IP. The previous set also skipped widget+cffi and
+        # portal+cffi, which left portal+requests as the only candidate -- and
+        # that one gets an intermittent Cloudflare 403 bot challenge, so
+        # enabling the set (rather than silently dropping it) broke login.
+        # Keeping the other three gives the fall-through chain room to work.
         if hasattr(client.client, "skip_strategies"):
-            client.client.skip_strategies = {
-                'mobile+cffi', 'mobile+requests', 'widget+cffi', 'portal+cffi'
-            }
+            client.client.skip_strategies = {'mobile+cffi', 'mobile+requests'}
         client.login()
         client.client.dump(tokenstore)
         print(f"✅ Tokens saved to {tokenstore}", file=sys.stderr)
