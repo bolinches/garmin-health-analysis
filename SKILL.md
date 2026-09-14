@@ -100,7 +100,7 @@ This uses credentials from (in priority order):
 3. Environment variables (`GARMIN_EMAIL`, `GARMIN_PASSWORD`)
 4. Clawdbot config (`skills.entries.garmin-health-analysis.env`)
 
-Session tokens are stored in `~/.clawdbot/garmin/` (garth tokenstore) and auto-refresh on subsequent calls.
+Session tokens are stored in `~/.openclaw/garmin/` and auto-refresh on subsequent calls.
 
 If you have existing tokens from a previous version (`~/.garminconnect/`), they are automatically migrated on first use.
 
@@ -298,12 +298,12 @@ When users ask for insights or want to understand their trends, use `references/
 
 ## Privacy Note
 
-- Credentials are stored locally in `~/.clawdbot/garmin/` (garth tokenstore directory)
+- Credentials are stored locally in `~/.openclaw/garmin/` (tokenstore directory)
 - Session tokens auto-refresh; if they expire, the module falls back to credentials from config/env
 - Legacy tokens from `~/.garminconnect/` are automatically migrated on first use
 - Rate-limited? The auth module retries once after 30s and tells you what to do
 - No data is sent anywhere except to Garmin's official servers
-- You can revoke access anytime by deleting the `~/.clawdbot/garmin/` directory
+- You can revoke access anytime by deleting the `~/.openclaw/garmin/` directory
 
 ## Comparison: Garmin vs Whoop
 

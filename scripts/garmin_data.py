@@ -354,7 +354,16 @@ def fetch_summary(client, days=7, start=None, end=None):
         bb = fetch_body_battery(client, days, start, end).get("body_battery", [])
         hr = fetch_heart_rate(client, days, start, end).get("heart_rate", [])
         activities = fetch_activities(client, days, start, end).get("activities", [])
-        
+
+        # VO2max (live value from Garmin Connect)
+        vo2max = None
+        try:
+            mm = client.get_max_metrics(end_date)
+            if mm and isinstance(mm, list) and mm:
+                vo2max = mm[0].get("generic", {}).get("vo2MaxPreciseValue")
+        except Exception:
+            pass
+
         # Calculate averages (handle None values)
         sleep_times = [s.get("sleep_time_seconds") for s in sleep if s.get("sleep_time_seconds")]
         avg_sleep_hours = (sum(sleep_times) / len(sleep_times) / 3600) if sleep_times else 0
@@ -387,7 +396,8 @@ def fetch_summary(client, days=7, start=None, end=None):
             "hrv": hrv,
             "body_battery": bb,
             "heart_rate": hr,
-            "activities": activities
+            "activities": activities,
+            "vo2max": vo2max
         }
     
     except Exception as e:

@@ -32,7 +32,12 @@ except ImportError as e:
     sys.exit(1)
 
 # ── Paths ──────────────────────────────────────────────────────────────────
-TOKEN_DIR = Path.home() / ".clawdbot" / "garmin"
+# NOTE: this must be the REAL path, not ~/.clawdbot.
+# ~/.clawdbot is a symlink to ~/.openclaw, and garminconnect >= 0.3.15
+# rejects any tokenstore with a symlinked ancestor in its path:
+#   "Token path must not be a symlink: '/root/.clawdbot/garmin'"
+# Both names point at the same directory, so no token migration is needed.
+TOKEN_DIR = Path.home() / ".openclaw" / "garmin"
 LEGACY_TOKEN_DIR = Path.home() / ".garminconnect"
 CONFIG_FILE = Path(__file__).parent.parent / "config.json"
 
@@ -80,7 +85,7 @@ def resolve_credentials(email=None, password=None):
 def _migrate_legacy_tokens():
     """
     Migrate tokens from legacy ~/.garminconnect/ to the current
-    ~/.clawdbot/garmin/ tokenstore (garth format).
+    ~/.openclaw/garmin/ tokenstore.
     Silent if nothing to migrate.
     """
     if not LEGACY_TOKEN_DIR.exists():
@@ -107,7 +112,7 @@ def _migrate_legacy_tokens():
         client.login(str(LEGACY_TOKEN_DIR))
         # If that works, dump to new location
         TOKEN_DIR.mkdir(parents=True, exist_ok=True)
-        client.garth.dump(str(TOKEN_DIR))
+        client.client.dump(str(TOKEN_DIR))
         TOKEN_DIR.chmod(0o700)
         print(f"✅ Migrated tokens from {LEGACY_TOKEN_DIR} to {TOKEN_DIR}",
               file=sys.stderr)
@@ -131,9 +136,15 @@ def _do_login(email, password):
         tokenstore = str(TOKEN_DIR)
 
         client = Garmin(email, password)
-        client.skip_strategies = {'mobile+cffi', 'mobile+requests', 'widget+cffi', 'portal+cffi'}
+        # skip_strategies lives on the inner Client, NOT on the Garmin object,
+        # and only exists in garminconnect >= 0.3.6 (absent in 0.3.3).
+        # Assigning it on the Garmin object is silently discarded.
+        if hasattr(client.client, "skip_strategies"):
+            client.client.skip_strategies = {
+                'mobile+cffi', 'mobile+requests', 'widget+cffi', 'portal+cffi'
+            }
         client.login()
-        client.garth.dump(tokenstore)
+        client.client.dump(tokenstore)
         print(f"✅ Tokens saved to {tokenstore}", file=sys.stderr)
 
         # Verify
