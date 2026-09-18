@@ -32,6 +32,16 @@ def get_date_range(days=None, start=None, end=None):
     return start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d")
 
 
+def _loc_ms(ms):
+    """Epoch ms -> local 'YYYY-MM-DD HH:MM:SS' (system TZ, Europe/Helsinki)."""
+    if not ms:
+        return None
+    try:
+        return datetime.fromtimestamp(ms / 1000).strftime("%Y-%m-%d %H:%M:%S")
+    except Exception:
+        return None
+
+
 def fetch_sleep(client, days=7, start=None, end=None):
     """Fetch sleep data."""
     start_date, end_date = get_date_range(days, start, end)
@@ -58,9 +68,26 @@ def fetch_sleep(client, days=7, start=None, end=None):
                             "awake_seconds": sleep_dto.get("awakeSleepSeconds"),
                             "sleep_score": sleep_dto.get("sleepScores", {}).get("overall", {}).get("value"),
                             "restless_periods": data.get("restlessMomentsCount"),  # This is on root
-                            "avg_hr": sleep_dto.get("averageHeartRate"),
+                            # Epoch ms, local-shifted. NOTE: the telemetry key is
+                            # avgHeartRate, not averageHeartRate (the latter is
+                            # always None in this payload).
+                            "sleep_start_ms": sleep_dto.get("sleepStartTimestampLocal"),
+                            "sleep_end_ms": sleep_dto.get("sleepEndTimestampLocal"),
+                            # Local wall-clock strings. These are the keys the
+                            # heartbeat writes to garmin.sleep, so they MUST be
+                            # present or the hourly path contributes no timing.
+                            "sleep_start": _loc_ms(sleep_dto.get("sleepStartTimestampLocal")),
+                            "sleep_end": _loc_ms(sleep_dto.get("sleepEndTimestampLocal")),
+                            "avg_hr": sleep_dto.get("avgHeartRate"),
+                            "avg_sleep_stress": sleep_dto.get("avgSleepStress"),
                             "avg_hrv": data.get("avgOvernightHrv"),  # This is on root
-                            "avg_respiration": sleep_dto.get("averageRespirationValue")
+                            "avg_respiration": sleep_dto.get("averageRespirationValue"),
+                            "high_respiration": sleep_dto.get("highestRespirationValue"),
+                            "low_respiration": sleep_dto.get("lowestRespirationValue"),
+                            "avg_spo2": sleep_dto.get("averageSpO2Value"),
+                            "low_spo2": sleep_dto.get("lowestSpO2Value"),
+                            "sleep_window_confirmed": sleep_dto.get("sleepWindowConfirmed"),
+                            "sleep_from_device": sleep_dto.get("sleepFromDevice"),
                         })
             except Exception as e:
                 print(f"⚠️  No sleep data for {date_str}: {e}", file=sys.stderr)
@@ -475,6 +502,12 @@ def main():
     
     # Output JSON
     print(json.dumps(result, indent=2))
+
+    # An error dict is a failure, not data. Exit non-zero so a caller (agent or
+    # shell) can tell "no data / auth failed" apart from a successful empty result.
+    if isinstance(result, dict) and result.get("error"):
+        print(f"Error: {result['error']}", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

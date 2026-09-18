@@ -256,6 +256,11 @@ def main():
     
     print(json.dumps(result, indent=2))
 
+    # An error dict is a failure, not data (same rule as garmin_data.py).
+    if isinstance(result, dict) and result.get("error"):
+        print(f"Error: {result['error']}", file=sys.stderr)
+        sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

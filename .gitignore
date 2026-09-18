@@ -3,3 +3,7 @@ __pycache__/
 *.pyc
 *.pyo
 .DS_Store
+
+# Local backups — never commit
+*.bak
+*.bak.*
