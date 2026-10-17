@@ -1,5 +1,22 @@
 # Changelog
 
+## v1.5.3 (2026-10-17)
+
+### Docs: SKILL.md now carries the README's content
+
+ClawHub renders SKILL.md, so it is the skill page. It lacked everything the
+README gained: fork context, the feature-diff table, and the scripts tree.
+Anyone landing on the listing saw no sign of the calendar, the trip API or the
+fork at all.
+
+- Added "What's Different Here" (feature diff vs the original) and "What's
+  Included" (scripts tree, now listing `garmin_calendar.py`)
+- Fork note with the upstream link and why the fork exists
+- `author:` -> `EversonL, bolinches`; Version Info credits both, and links the
+  fork repo
+- Install metadata pins `garminconnect>=0.3.18`
+- Troubleshooting names the trip-API floor instead of a bare upgrade line
+
 ## v1.5.2 (2026-10-17)
 
 ### Docs: drop Clawdbot-era setup text

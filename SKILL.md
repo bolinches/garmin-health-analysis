@@ -1,15 +1,47 @@
 ---
 name: garmin-health-analysis
 description: Talk to your Garmin data naturally - "what was my fastest speed snowboarding?", "how did I sleep last night?", "what was my heart rate at 3pm?". Access 20+ metrics (sleep stages, Body Battery, HRV, VO2 max, training readiness, body composition, SPO2), download FIT/GPX files for route analysis, query elevation/pace at any point, and generate interactive health dashboards. From casual "show me this week's workouts" to deep "analyze my recovery vs training load".
-version: 1.5.2
-author: EversonL & Claude
+version: 1.5.3
+author: EversonL, bolinches
 homepage: https://github.com/bolinches/garmin-health-analysis
-metadata: {"clawdbot":{"emoji":"⌚","requires":{"env":["GARMIN_EMAIL","GARMIN_PASSWORD"]},"install":[{"id":"garminconnect","kind":"python","package":"garminconnect","label":"Install garminconnect (pip)"},{"id":"fitparse","kind":"python","package":"fitparse","label":"Install fitparse (pip)"},{"id":"gpxpy","kind":"python","package":"gpxpy","label":"Install gpxpy (pip)"}]}}
+metadata: {"clawdbot":{"emoji":"⌚","requires":{"env":["GARMIN_EMAIL","GARMIN_PASSWORD"]},"install":[{"id":"garminconnect","kind":"python","package":"garminconnect>=0.3.18","label":"Install garminconnect (pip)"},{"id":"fitparse","kind":"python","package":"fitparse","label":"Install fitparse (pip)"},{"id":"gpxpy","kind":"python","package":"gpxpy","label":"Install gpxpy (pip)"}]}}
 ---
 
 # Garmin Health Analysis
 
 Query health metrics from Garmin Connect and generate interactive HTML charts.
+
+**Forked from [eversonl/ClawdBot-garmin-health-analysis](https://github.com/eversonl/ClawdBot-garmin-health-analysis).**
+The original had gone quiet for over six months
+([issue 5](https://github.com/eversonl/ClawdBot-garmin-health-analysis/issues/5))
+and did not cover what was needed here. This fork extends it.
+
+## What's Different Here
+
+| Feature | Original | This Fork |
+|---------|----------|-----------|
+| Activity splits (per-km/lap HR + pace) | no | yes |
+| Auth resilience (429 retry, token fallback, legacy migration) | no | yes |
+| Time-based queries ("what was my HR at 3pm?") | no | yes |
+| Extended metrics (VO2max, training readiness, endurance score) | no | yes |
+| FIT/GPX file download and analysis | no | yes |
+| Per-second activity detail queries | no | yes |
+| Interactive HTML dashboards | no | yes |
+| Calendar: trips, races/events, naps, weigh-ins | no | yes |
+| Jet Lag Adviser trips: create / replace / delete | no | yes |
+
+## What's Included
+
+```text
+scripts/
+├── garmin_auth.py              # Login, token refresh, credential resolution
+├── garmin_data.py              # Core metrics: sleep, HRV, Body Battery, activities
+├── garmin_data_extended.py     # VO2max, training readiness, endurance score
+├── garmin_calendar.py          # Calendar: trips, races, events + trip create/update/delete
+├── garmin_activity_files.py    # FIT/GPX download and analysis
+├── garmin_query.py             # Time-based queries
+└── garmin_chart.py             # HTML dashboard generation
+```
 
 ## Two Installation Paths
 
@@ -370,7 +402,9 @@ When users ask for insights or want to understand their trends, use `references/
 - New accounts may have limited history
 
 ### Library Issues
-- If `garminconnect` import fails: `pip3 install --upgrade garminconnect`
+- If `garminconnect` import fails: `pip3 install --upgrade 'garminconnect>=0.3.18'`
+- Trip writing (Jet Lag Adviser) needs `garminconnect >= 0.3.18`; older versions
+  have no trip methods at all. That release also dropped the old `garth` dep.
 - Garmin occasionally changes their API; update the library if requests fail
 
 ## Privacy Note
@@ -396,17 +430,19 @@ When users ask for insights or want to understand their trends, use `references/
 
 ## References
 
+- `README.md` — fork overview, feature diff and install summary
 - `references/api.md` — Garmin Connect API details (unofficial)
 - `references/health_analysis.md` — Science-backed health data interpretation
 - [garminconnect library](https://github.com/cyberjunky/python-garminconnect) — Python API wrapper
 - [Garmin Connect](https://connect.garmin.com) — Official web interface
+- [This fork](https://github.com/bolinches/garmin-health-analysis) — source, issues
 
 ## Version Info
 
 - **Created**: 2026-01-25
-- **Author**: EversonL & Claude
-- **Version**: 1.5.2
-- **Dependencies**: garminconnect, curl_cffi, fitparse, gpxpy (Python libraries)
+- **Authors**: EversonL (original), bolinches (fork and extensions)
+- **Version**: 1.5.3
+- **Dependencies**: garminconnect (>=0.3.18), curl_cffi, fitparse, gpxpy
 - **License**: Apache 2.0
 - **Trip API**: requires `garminconnect >= 0.3.18` (Jet Lag Adviser trips; that
   release also dropped the old `garth` dependency)
