@@ -17,6 +17,7 @@
 | FIT/GPX file download and analysis | ❌ | ✅ |
 | Per-second activity detail queries | ❌ | ✅ |
 | Interactive HTML dashboards | ❌ | ✅ |
+| Calendar: trips, races/events, naps, weigh-ins | ❌ | ✅ |
 
 ## Installation
 
@@ -38,6 +39,8 @@ Full setup guide in [SKILL.md](SKILL.md).
 - "How did I sleep last night?" — sleep hours, stages, score
 - "Show me my last run with splits" — per-km pace, HR, cadence
 - "What's my recovery like this week?" — Body Battery, HRV, readiness
+- "What trips do I have coming up?" — future trips from the Garmin calendar
+- "What races did I run?" — races/events with dates and links
 - "Is my VO2max improving?" — trend over time
 - "Download the GPX for Sunday's run" — route data
 - "What was my heart rate at 3pm yesterday?" — time-based queries

@@ -189,6 +189,35 @@ python3 scripts/garmin_data.py activity_detail --activity-id 600107330 \
 
 Output is JSON to stdout. Parse it to answer user questions.
 
+## Calendar: Trips, Races, Events
+
+Use `scripts/garmin_calendar.py` for anything about travel, races or calendar entries.
+Trips and races are added in the Garmin app; this reads them back.
+
+```bash
+# Trips (past and FUTURE), grouped into windows
+python3 scripts/garmin_calendar.py trips --months-back 14 --months-fwd 6
+
+# Past trip days labelled with their Garmin trip name
+python3 scripts/garmin_calendar.py trips --months-back 2 --with-names
+
+# Races / events (title + URL)
+python3 scripts/garmin_calendar.py races --months-back 24
+
+# Everything, or a quick overview
+python3 scripts/garmin_calendar.py calendar --months-back 12
+python3 scripts/garmin_calendar.py summary --months-back 14 --months-fwd 4
+```
+
+Item types: `jetLagTrip` (trips), `event` (races, with title + URL), `nap`,
+`userTimeChanged` (timezone change = flight day), `weight`, `wellnessActivity`,
+`bloodpressure`, `activity`.
+
+**Trips are the only place FUTURE travel appears.** `get_stats().isJetLagDay`
+reports only days already lived, so anything about an upcoming trip must come from
+the calendar. Future trip days have no `trip_name` (Garmin publishes the name only
+after the day has passed); `--with-names` labels past days only.
+
 ## Generating Charts
 
 Use `scripts/garmin_chart.py` for interactive HTML visualizations:
@@ -228,6 +257,9 @@ Charts open automatically in the default browser. They use Chart.js with a moder
 | "Show me my heart rate during my run" | `garmin_data.py activity_detail --activity-id ID --metrics directHeartRate,directSpeed --sample-interval 30` |
 | "What were my lap splits?" | `garmin_data.py activity_splits --activity-id ID`, report per-lap HR + pace |
 | "How did my pace change over the run?" | `garmin_data.py activity_detail --activity-id ID --metrics directSpeed,sumDistance --sample-interval 60` |
+| "What trips do I have coming up?" | `garmin_calendar.py trips --months-fwd 6`, report future windows |
+| "What races have I run?" | `garmin_calendar.py races --months-back 24`, list titles + dates |
+| "When was I last away?" | `garmin_calendar.py trips --months-back 6 --with-names`, name the windows |
 
 ## Key Metrics
 

@@ -1,5 +1,50 @@
 # Changelog
 
+## v1.4.0 (2026-10-17)
+
+### 📅 Calendar: Trips, Races, Events
+
+**NEW: read the Garmin Connect calendar via `scripts/garmin_calendar.py`.**
+
+The Garmin calendar-service carries more than workouts. Trips and races added in
+the Garmin app land there, and trips are `itemType="jetLagTrip"`, one item **per
+calendar day** of the trip.
+
+- Added `garmin_calendar.py` with subcommands:
+  - `calendar` — every item in the window
+  - `trips` — trip days, grouped into windows. **The only source for FUTURE trips**:
+    `get_stats().isJetLagDay` reports only days that have already happened, so the
+    calendar is what makes pre-trip advice possible. `--with-names` labels past
+    days from `get_stats().jetLagTripName` (one call per past day; names are not
+    published for future days).
+  - `races` / `events` — races and booked events, **with title and URL**
+  - `nap` — recorded naps
+  - `summary` — counts by item type, plus future trip days
+- Item types observed: `activity`, `jetLagTrip`, `nap`, `userTimeChanged`
+  (timezone change — the flight-day tell), `weight`, `event`, `wellnessActivity`,
+  `bloodpressure`.
+- Endpoint: `GET /calendar-service/year/{year}/month/{month-1}` (0-indexed month)
+  via `get_scheduled_workouts(year, month)`.
+- Dedupes items that calendar-service re-yields across adjacent month boundaries
+  (events near a month edge arrived two or more times before this).
+- Month-level errors are reported in `errors` rather than aborting the window,
+  because calendar-service has a history floor (nothing before ~2024-12).
+
+**Usage examples:**
+```bash
+# Upcoming and past trips, grouped into windows
+python3 scripts/garmin_calendar.py trips --months-back 14 --months-fwd 6
+
+# Label past trip days with their Garmin trip name
+python3 scripts/garmin_calendar.py trips --months-back 2 --with-names
+
+# Races and events
+python3 scripts/garmin_calendar.py races --months-back 24
+
+# Quick overview
+python3 scripts/garmin_calendar.py summary --months-back 14 --months-fwd 4
+```
+
 ## v1.3.0 (2026-06-02)
 
 ### 🏃 Activity Detail & Splits - Per-Second and Per-Lap Data
