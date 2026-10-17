@@ -213,6 +213,52 @@ Item types: `jetLagTrip` (trips), `event` (races, with title + URL), `nap`,
 `userTimeChanged` (timezone change = flight day), `weight`, `wellnessActivity`,
 `bloodpressure`, `activity`.
 
+### Writing trips (Jet Lag Adviser)
+
+Trips have their own API, separate from the calendar. It can **create, replace and
+delete** them, so a trip can be added without the phone app:
+
+```bash
+# List trips (with their flights)
+python3 scripts/garmin_calendar.py trip-list
+
+# Add a trip
+python3 scripts/garmin_calendar.py trip-add --start 2026-11-05 --end 2026-11-09 \
+  --flights '[
+    {"originLocation":"Helsinki, South Finland, Finland","originTimezone":"+02:00",
+     "originTimestamp":"2026-11-05T15:45:00",
+     "destinationLocation":"Dubai, United Arab Emirates","destinationTimezone":"+04:00",
+     "destinationTimestamp":"2026-11-06T00:20:00"},
+    {"originLocation":"Dubai, United Arab Emirates","originTimezone":"+04:00",
+     "originTimestamp":"2026-11-09T08:25:00",
+     "destinationLocation":"Helsinki, South Finland, Finland","destinationTimezone":"+02:00",
+     "destinationTimestamp":"2026-11-09T13:55:00"}
+  ]'
+
+# Replace / remove
+python3 scripts/garmin_calendar.py trip-update --trip-id ID --start ... --end ... --flights ...
+python3 scripts/garmin_calendar.py trip-delete --trip-id ID
+```
+
+**Flight fields** (all six required, one entry per leg, so a connection is two):
+`originLocation`, `originTimezone`, `originTimestamp`, `destinationLocation`,
+`destinationTimezone`, `destinationTimestamp`. Garmin does **not** geocode —
+give the location as free text and the UTC offset (`+02:00`, `-07:00`) for that
+date. Timestamps are **local time at that place, with no offset**.
+
+Gotchas confirmed live 2026-10-17:
+- A timestamp **without** a fractional second (`...T15:45:00`) is rejected with
+  `HTTP 500`; with `...T15:45:00.0` it succeeds. The script normalises this for
+  you, so either form may be passed.
+- A trip whose dates overlap an existing trip is refused: `HTTP 400 "A trip
+  already exists for this date range"`.
+- Garmin auto-deletes a trip once it has ended and the user has re-adjusted to
+  home time, so `trip-list` holds only current/recent trips. Older travel lives
+  on as `jetLagTrip` day markers in the calendar, which is why both are kept.
+- `trip-id` is required for update/delete and comes from `trip-list`.
+
+Requires `garminconnect >= 0.3.18`.
+
 **Trips are the only place FUTURE travel appears.** `get_stats().isJetLagDay`
 reports only days already lived, so anything about an upcoming trip must come from
 the calendar. Future trip days have no `trip_name` (Garmin publishes the name only

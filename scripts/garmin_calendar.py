@@ -19,6 +19,15 @@ races in the Garmin app, and this is where they land:
 Endpoint: GET /calendar-service/year/{year}/month/{month-1}  (0-indexed month)
 via the client's get_scheduled_workouts(year, month).
 
+TRIPS also have their own API, which the calendar does NOT expose:
+  GET    /jetlag-service/jetlag/trip        list trips (with flights)
+  POST   /jetlag-service/jetlag/trip        create
+  PUT    /jetlag-service/jetlag/trip        replace
+  DELETE /jetlag-service/jetlag/trip/{id}   delete
+  GET    /jetlag-service/jetlag/status/daily/{date}  guidance
+That path can CREATE and EDIT trips, so `trip-add` / `trip-update` /
+`trip-delete` below write them. Requires garminconnect >= 0.3.18.
+
 Outputs JSON to stdout for parsing by the agent.
 """
 
@@ -37,6 +46,54 @@ try:
 except ImportError:
     print('{"error": "garminconnect not installed. Run: pip3 install garminconnect"}', file=sys.stderr)
     sys.exit(1)
+
+# Jet Lag trip write support arrived in garminconnect 0.3.18. Guard on the
+# attribute rather than a version string, so it fails with a clear message
+# instead of an AttributeError deep in the library.
+def _trip_api_available(client):
+    return all(hasattr(client, m) for m in
+               ("get_jetlag_trips", "add_jetlag_trip", "update_jetlag_trip", "delete_jetlag_trip"))
+
+_TRIP_UPGRADE_HINT = ("Trip writing needs garminconnect >= 0.3.18 "
+                     "(pip3 install --upgrade garminconnect)")
+
+
+def _normalize_timestamp(ts):
+    """Garmin stores trip times with a fractional second (e.g. '...T15:45:00.0').
+
+    Live testing on 2026-10-17: a time WITHOUT the '.0' was rejected with
+    HTTP 500, while the same trip with '.0' succeeded. Normalise, so a caller
+    can pass either form.
+    """
+    if not isinstance(ts, str):
+        return ts
+    if "." in ts.split("T")[-1]:
+        return ts
+    return ts + ".0"
+
+
+def _load_flights(arg_flights, arg_file):
+    """Flights come in as --flights '<json>' or --flights-file <path>."""
+    raw = None
+    if arg_flights:
+        raw = arg_flights
+    elif arg_file:
+        raw = Path(arg_file).read_text()
+    if not raw:
+        raise ValueError("provide --flights '<json>' or --flights-file <path>")
+    data = json.loads(raw)
+    if isinstance(data, dict):
+        data = data.get("flights") or []
+    if not isinstance(data, list) or not data:
+        raise ValueError("flights must be a non-empty JSON list")
+    out = []
+    for f in data:
+        f = dict(f)
+        for k in ("originTimestamp", "destinationTimestamp"):
+            if f.get(k):
+                f[k] = _normalize_timestamp(f[k])
+        out.append(f)
+    return out
 
 
 def add_months(d, n):
@@ -152,14 +209,59 @@ def _trips(client, months_back, months_fwd, with_names=False):
     return out
 
 
+def _trip_write(client, mode, args):
+    """trip-list / trip-add / trip-update / trip-delete."""
+    if not _trip_api_available(client):
+        return {"error": _TRIP_UPGRADE_HINT}
+
+    if mode == "trip-list":
+        trips = client.get_jetlag_trips() or []
+        return {"trips": trips, "count": len(trips)}
+
+    if mode == "trip-delete":
+        if not args.trip_id:
+            return {"error": "--trip-id is required for trip-delete"}
+        client.delete_jetlag_trip(args.trip_id)
+        return {"deleted": str(args.trip_id), "trips": client.get_jetlag_trips() or []}
+
+    # trip-add / trip-update share the same payload
+    if not args.start or not args.end:
+        return {"error": "--start and --end are required (YYYY-MM-DD)"}
+    try:
+        flights = _load_flights(args.flights, args.flights_file)
+    except Exception as e:
+        return {"error": f"flights: {e}"}
+
+    if mode == "trip-update":
+        if not args.trip_id:
+            return {"error": "--trip-id is required for trip-update"}
+        client.update_jetlag_trip(args.trip_id, args.start, args.end, flights)
+        got = [t for t in (client.get_jetlag_trips() or [])
+               if str(t.get("tripId")) == str(args.trip_id)]
+        return {"updated": str(args.trip_id), "trip": got[0] if got else None}
+
+    created = client.add_jetlag_trip(args.start, args.end, flights)
+    tid = created.get("tripId") if isinstance(created, dict) else None
+    got = [t for t in (client.get_jetlag_trips() or [])
+           if str(t.get("tripId")) == str(tid)]
+    return {"created": created, "read_back": got[0] if got else None}
+
+
 def main():
-    parser = argparse.ArgumentParser(description="Fetch the Garmin Connect calendar")
-    parser.add_argument("metric", choices=["calendar", "trips", "races", "events", "nap", "summary"],
-                        help="calendar=all items, trips=jetLagTrip days, races/events=event items, nap=naps, summary=counts by type")
+    parser = argparse.ArgumentParser(description="Fetch or edit the Garmin Connect calendar")
+    parser.add_argument("metric", choices=["calendar", "trips", "races", "events", "nap", "summary",
+                                           "trip-list", "trip-add", "trip-update", "trip-delete"],
+                        help="calendar=all items, trips=jetLagTrip days, races/events=event items, nap=naps, "
+                             "summary=counts by type, trip-list/-add/-update/-delete=Jet Lag trip API")
     parser.add_argument("--months-back", type=int, default=12, help="Months of history to scan (default: 12)")
     parser.add_argument("--months-fwd", type=int, default=6, help="Months ahead to scan (default: 6)")
     parser.add_argument("--with-names", action="store_true",
                         help="For trips: also label past days with the trip name from get_stats (one call per past day)")
+    parser.add_argument("--start", help="Trip start date YYYY-MM-DD (trip-add/trip-update)")
+    parser.add_argument("--end", help="Trip end date YYYY-MM-DD (trip-add/trip-update)")
+    parser.add_argument("--trip-id", help="Trip id (trip-update/trip-delete)")
+    parser.add_argument("--flights", help="Flights as a JSON list (trip-add/trip-update)")
+    parser.add_argument("--flights-file", help="Path to a JSON file holding the flights list")
     args = parser.parse_args()
 
     client = get_client()
@@ -167,7 +269,9 @@ def main():
         print('{"error": "Not authenticated. Run: python3 scripts/garmin_auth.py login --email YOUR_EMAIL --password YOUR_PASSWORD"}')
         sys.exit(1)
 
-    if args.metric == "trips":
+    if args.metric.startswith("trip-"):
+        result = _trip_write(client, args.metric, args)
+    elif args.metric == "trips":
         result = _trips(client, args.months_back, args.months_fwd, args.with_names)
     elif args.metric in ("races", "events"):
         cal = fetch_calendar(client, args.months_back, args.months_fwd)

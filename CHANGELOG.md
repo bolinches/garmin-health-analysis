@@ -1,5 +1,35 @@
 # Changelog
 
+## v1.5.0 (2026-10-17)
+
+### ✈️ Jet Lag Adviser trips: read AND write
+
+**NEW: trips can now be created, replaced and deleted from the CLI.** Trips have
+their own API ([`garminconnect`](https://github.com/cyberjunky/python-garminconnect)
+>= 0.3.18), separate from the calendar, and it is writable.
+
+- Added `trip-list` / `trip-add` / `trip-update` / `trip-delete` subcommands to
+  `garmin_calendar.py`.
+- Endpoints: `GET|POST|PUT /jetlag-service/jetlag/trip`, `DELETE
+  /jetlag-service/jetlag/trip/{id}`, `GET /jetlag-service/jetlag/status/daily/{date}`.
+- **Live-tested end to end** on a real account: create → read-back → replace →
+  delete, each verified against `trip-list` and cleaned up afterwards.
+- Flight fields (all six required, one entry per leg, so a connection is two):
+  `originLocation`, `originTimezone`, `originTimestamp`, `destinationLocation`,
+  `destinationTimezone`, `destinationTimestamp`. Garmin does not geocode; give
+  free-text locations and the UTC offset for that date. Timestamps are local time
+  with no offset.
+- **Gotcha found live:** a timestamp without a fractional second
+  (`...T15:45:00`) is rejected with `HTTP 500`. With `...T15:45:00.0` it
+  succeeds. The script normalises this, so either form may be passed.
+- A trip overlapping an existing one is refused: `HTTP 400 "A trip already
+  exists for this date range"`.
+- Trips are auto-deleted by Garmin once they end and the user has re-adjusted to
+  home time. So `trip-list` holds only current/recent trips; older travel survives
+  as `jetLagTrip` day markers in the calendar. Both sources are kept for that
+  reason.
+- `install.sh` now pins `garminconnect>=0.3.18` (0.3.18 also dropped `garth`).
+
 ## v1.4.0 (2026-10-17)
 
 ### 📅 Calendar: Trips, Races, Events
