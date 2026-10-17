@@ -221,6 +221,20 @@ def _trip_write(client, mode, args):
     if mode == "trip-delete":
         if not args.trip_id:
             return {"error": "--trip-id is required for trip-delete"}
+        # SAFETY GATE (security-audit 2026-10-17): deleting a trip mutates the
+        # user's Garmin account and cannot be undone from here. Without
+        # --confirm-delete this branch is READ-ONLY: it resolves the trip and
+        # reports exactly what would be removed. The caller must show that to
+        # the user and get an explicit yes before re-running with the flag.
+        target = next((t for t in (client.get_jetlag_trips() or [])
+                       if str(t.get("tripId")) == str(args.trip_id)), None)
+        if not args.confirm_delete:
+            return {"confirmation_required": True,
+                    "dry_run": True,
+                    "would_delete": target or {"tripId": str(args.trip_id), "found": False},
+                    "hint": "nothing was changed; re-run with --confirm-delete to delete this trip"}
+        if target is None:
+            return {"error": f"no trip with id {args.trip_id}; nothing deleted"}
         client.delete_jetlag_trip(args.trip_id)
         return {"deleted": str(args.trip_id), "trips": client.get_jetlag_trips() or []}
 
@@ -235,6 +249,20 @@ def _trip_write(client, mode, args):
     if mode == "trip-update":
         if not args.trip_id:
             return {"error": "--trip-id is required for trip-update"}
+        # SAFETY GATE: the trip API is a full REPLACE, so an incomplete flight
+        # list silently drops legs. Preview the current trip and the exact
+        # payload unless --confirm-update is passed.
+        current = next((t for t in (client.get_jetlag_trips() or [])
+                        if str(t.get("tripId")) == str(args.trip_id)), None)
+        if not args.confirm_update:
+            return {"confirmation_required": True,
+                    "dry_run": True,
+                    "current": current,
+                    "would_write": {"start": args.start, "end": args.end, "flights": flights},
+                    "hint": "this REPLACES the whole trip; nothing was changed. "
+                            "re-run with --confirm-update to apply"}
+        if current is None:
+            return {"error": f"no trip with id {args.trip_id}; nothing updated"}
         client.update_jetlag_trip(args.trip_id, args.start, args.end, flights)
         got = [t for t in (client.get_jetlag_trips() or [])
                if str(t.get("tripId")) == str(args.trip_id)]
@@ -262,6 +290,10 @@ def main():
     parser.add_argument("--trip-id", help="Trip id (trip-update/trip-delete)")
     parser.add_argument("--flights", help="Flights as a JSON list (trip-add/trip-update)")
     parser.add_argument("--flights-file", help="Path to a JSON file holding the flights list")
+    parser.add_argument("--confirm-delete", action="store_true",
+                        help="Required to actually delete a trip. Without it, trip-delete only previews.")
+    parser.add_argument("--confirm-update", action="store_true",
+                        help="Required to actually replace a trip (the API is a full replace). Without it, trip-update only previews.")
     args = parser.parse_args()
 
     client = get_client()
@@ -306,6 +338,12 @@ def main():
     if isinstance(result, dict) and result.get("error"):
         print(f"Error: {result['error']}", file=sys.stderr)
         sys.exit(1)
+
+    # A preview is not a completed mutation. Exit 2 so no caller can mistake
+    # "here is what would happen" for "it happened" (security-audit 2026-10-17).
+    if isinstance(result, dict) and result.get("confirmation_required"):
+        print("Confirmation required; nothing was changed.", file=sys.stderr)
+        sys.exit(2)
 
 
 if __name__ == "__main__":

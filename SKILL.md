@@ -1,7 +1,7 @@
 ---
 name: garmin-health-analysis
 description: Talk to your Garmin data naturally - "what was my fastest speed snowboarding?", "how did I sleep last night?", "what was my heart rate at 3pm?". Access 20+ metrics (sleep stages, Body Battery, HRV, VO2 max, training readiness, body composition, SPO2), download FIT/GPX files for route analysis, query elevation/pace at any point, and generate interactive health dashboards. From casual "show me this week's workouts" to deep "analyze my recovery vs training load".
-version: 1.5.3
+version: 1.6.0
 author: EversonL, bolinches
 homepage: https://github.com/bolinches/garmin-health-analysis
 metadata: {"clawdbot":{"emoji":"⌚","requires":{"env":["GARMIN_EMAIL","GARMIN_PASSWORD"]},"install":[{"id":"garminconnect","kind":"python","package":"garminconnect>=0.3.18","label":"Install garminconnect (pip)"},{"id":"fitparse","kind":"python","package":"fitparse","label":"Install fitparse (pip)"},{"id":"gpxpy","kind":"python","package":"gpxpy","label":"Install gpxpy (pip)"}]}}
@@ -271,6 +271,28 @@ python3 scripts/garmin_calendar.py trip-update --trip-id ID --start ... --end ..
 python3 scripts/garmin_calendar.py trip-delete --trip-id ID
 ```
 
+**Confirmation gate (destructive operations).** `trip-delete` and `trip-update`
+change the Garmin account and cannot be undone from here, so both are
+**read-only by default**. Without the flag they resolve the target, report
+exactly what would change, and exit **2** having touched nothing:
+
+```bash
+# Previews only: prints the trip that would be deleted, changes nothing
+python3 scripts/garmin_calendar.py trip-delete --trip-id ID
+
+# Actually deletes
+python3 scripts/garmin_calendar.py trip-delete --trip-id ID --confirm-delete
+
+# Previews: shows the current trip beside the payload that would REPLACE it
+python3 scripts/garmin_calendar.py trip-update --trip-id ID --start ... --end ... --flights ...
+python3 scripts/garmin_calendar.py trip-update --trip-id ID --start ... --end ... --flights ... --confirm-update
+```
+
+Agent rule: run the preview first, show the user the exact trip (id, dates,
+flights), and only re-run with `--confirm-*` after an explicit yes. Exit 2 means
+"confirmation required, nothing happened", not success. `trip-add` creates a new
+trip and is not gated.
+
 **Flight fields** (all six required, one entry per leg, so a connection is two):
 `originLocation`, `originTimezone`, `originTimestamp`, `destinationLocation`,
 `destinationTimezone`, `destinationTimestamp`. Garmin does **not** geocode —
@@ -287,6 +309,9 @@ Gotchas confirmed live 2026-10-17:
   home time, so `trip-list` holds only current/recent trips. Older travel lives
   on as `jetLagTrip` day markers in the calendar, which is why both are kept.
 - `trip-id` is required for update/delete and comes from `trip-list`.
+- **`trip-update` is a full REPLACE**, not a patch: the flight list you pass
+  becomes the whole trip, so an incomplete list silently drops legs. It is gated
+  for that reason.
 
 Requires `garminconnect >= 0.3.18`.
 
@@ -441,7 +466,7 @@ When users ask for insights or want to understand their trends, use `references/
 
 - **Created**: 2026-01-25
 - **Authors**: EversonL (original), bolinches (fork and extensions)
-- **Version**: 1.5.3
+- **Version**: 1.6.0
 - **Dependencies**: garminconnect (>=0.3.18), curl_cffi, fitparse, gpxpy
 - **License**: Apache 2.0
 - **Trip API**: requires `garminconnect >= 0.3.18` (Jet Lag Adviser trips; that

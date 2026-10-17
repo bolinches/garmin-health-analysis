@@ -33,6 +33,10 @@ python3 scripts/garmin_auth.py login
 `garminconnect >= 0.3.18` is required for the Jet Lag Adviser trip API. That
 release also dropped the old `garth` dependency.
 
+Destructive trip operations (`trip-delete`, `trip-update`) are **read-only by
+default**: they preview the change and exit 2, and only act when passed
+`--confirm-delete` / `--confirm-update`.
+
 Full setup guide in [SKILL.md](SKILL.md).
 
 ## What You Can Do
@@ -42,6 +46,7 @@ Full setup guide in [SKILL.md](SKILL.md).
 - "What's my recovery like this week?" — Body Battery, HRV, readiness
 - "What trips do I have coming up?" — future trips from the Garmin calendar
 - "Add a trip" — create a Jet Lag Adviser trip from the CLI
+- "Delete that trip" — gated: the CLI previews first and needs `--confirm-delete`
 - "What races did I run?" — races/events with dates and links
 - "Is my VO2max improving?" — trend over time
 - "Download the GPX for Sunday's run" — route data

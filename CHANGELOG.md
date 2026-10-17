@@ -1,5 +1,27 @@
 # Changelog
 
+## v1.6.0 (2026-10-17)
+
+### Security: confirmation gate on destructive trip operations
+
+ClawHub's security audit flagged `trip-delete` (Medium): it checked only that
+`--trip-id` was non-empty and then deleted, with no confirmation gate. Correct
+finding, and it also under-reported: `trip-update` is a full **replace**, so an
+incomplete flight list silently drops legs.
+
+Both are now **read-only by default**:
+
+- `trip-delete` resolves the target, reports exactly what would be removed, and
+  exits **2** having changed nothing. Deleting requires `--confirm-delete`.
+- `trip-update` shows the current trip beside the payload that would replace it,
+  and exits **2**. Applying requires `--confirm-update`.
+- A missing or unknown trip id is an error (exit 1), not a silent no-op.
+- `trip-add` is not gated: it creates a new trip rather than destroying one.
+
+Exit **2** is deliberate, so no caller can mistake "here is what would happen"
+for "it happened". SKILL.md and README document the gate and the
+preview-then-confirm rule for agents.
+
 ## v1.5.3 (2026-10-17)
 
 ### Docs: SKILL.md now carries the README's content
