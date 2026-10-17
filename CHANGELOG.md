@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.5.1 (2026-10-17)
+## v1.5.2 (2026-10-17)
 
 ### Docs: drop Clawdbot-era setup text
 
