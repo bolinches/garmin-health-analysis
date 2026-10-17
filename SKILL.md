@@ -27,7 +27,7 @@ Choose the path that matches your use case. You can also use both simultaneously
 ### 1. Install Dependencies
 
 ```bash
-pip3 install garminconnect
+pip3 install 'garminconnect>=0.3.18' curl_cffi
 ```
 
 ### 2. Configure Credentials
@@ -408,4 +408,6 @@ When users ask for insights or want to understand their trends, use `references/
 - **Author**: EversonL & Claude
 - **Version**: 1.5.0
 - **Dependencies**: garminconnect, curl_cffi, fitparse, gpxpy (Python libraries)
-- **License**: MIT
+- **License**: Apache 2.0
+- **Trip API**: requires `garminconnect >= 0.3.18` (Jet Lag Adviser trips; that
+  release also dropped the old `garth` dependency)

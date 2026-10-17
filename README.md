@@ -1,37 +1,37 @@
 # Garmin Health Analysis
 
-> Talk to your Garmin data naturally. Activity splits, sleep, HRV, Body Battery, training readiness, and more.
+> Talk to your Garmin data naturally. Sleep, HRV, Body Battery, training
+> readiness, activity splits, and the Garmin calendar — trips, races and events.
 
-**Forked from [eversonl/ClawdBot-garmin-health-analysis](https://github.com/eversonl/ClawdBot-garmin-health-analysis).** The original was a solid start but didn't cover what I needed — per-activity splits, auth resilience, extended metrics, and time-based queries. This version adds all of that. ALso original version seems to be outdated for over 6 months. https://github.com/eversonl/ClawdBot-garmin-health-analysis/issues/5
-
----
+**Forked from [eversonl/ClawdBot-garmin-health-analysis](https://github.com/eversonl/ClawdBot-garmin-health-analysis).**
+The original was a solid start but had gone quiet for over six months
+([issue 5](https://github.com/eversonl/ClawdBot-garmin-health-analysis/issues/5))
+and did not cover what I needed: per-activity splits, auth resilience, extended
+metrics, time-based queries, and the calendar. This fork adds all of that.
 
 ## What's Different Here
 
 | Feature | Original | This Fork |
 |---------|----------|-----------|
-| Activity splits (per-km/lap HR + pace) | ❌ | ✅ |
-| Auth resilience (429 retry, token fallback, legacy migration) | ❌ | ✅ |
-| Time-based queries ("what was my HR at 3pm?") | ❌ | ✅ |
-| Extended metrics (VO2max, training readiness, endurance score) | ❌ | ✅ |
-| FIT/GPX file download and analysis | ❌ | ✅ |
-| Per-second activity detail queries | ❌ | ✅ |
-| Interactive HTML dashboards | ❌ | ✅ |
-| Calendar: trips, races/events, naps, weigh-ins | ❌ | ✅ |
-| Jet Lag Adviser trips: create / replace / delete | ❌ | ✅ |
+| Activity splits (per-km/lap HR + pace) | no | yes |
+| Auth resilience (429 retry, token fallback, legacy migration) | no | yes |
+| Time-based queries ("what was my HR at 3pm?") | no | yes |
+| Extended metrics (VO2max, training readiness, endurance score) | no | yes |
+| FIT/GPX file download and analysis | no | yes |
+| Per-second activity detail queries | no | yes |
+| Interactive HTML dashboards | no | yes |
+| Calendar: trips, races/events, naps, weigh-ins | no | yes |
+| Jet Lag Adviser trips: create / replace / delete | no | yes |
 
 ## Installation
 
 ```bash
-# Install via clawdhub
-clawdhub install garmin-health-analysis
-
-# Or manually
-cd ~/.clawdbot/skills
-git clone https://github.com/bolinches/garmin-health-analysis.git garmin-health-analysis
-pip3 install garminconnect fitparse gpxpy
+pip3 install 'garminconnect>=0.3.18' curl_cffi fitparse gpxpy
 python3 scripts/garmin_auth.py login
 ```
+
+`garminconnect >= 0.3.18` is required for the Jet Lag Adviser trip API. That
+release also dropped the old `garth` dependency.
 
 Full setup guide in [SKILL.md](SKILL.md).
 
@@ -41,7 +41,7 @@ Full setup guide in [SKILL.md](SKILL.md).
 - "Show me my last run with splits" — per-km pace, HR, cadence
 - "What's my recovery like this week?" — Body Battery, HRV, readiness
 - "What trips do I have coming up?" — future trips from the Garmin calendar
-- "Add my Dubai trip" — create a Jet Lag Adviser trip from the CLI
+- "Add a trip" — create a Jet Lag Adviser trip from the CLI
 - "What races did I run?" — races/events with dates and links
 - "Is my VO2max improving?" — trend over time
 - "Download the GPX for Sunday's run" — route data
@@ -49,11 +49,12 @@ Full setup guide in [SKILL.md](SKILL.md).
 
 ## What's Included
 
-```
+```text
 scripts/
 ├── garmin_auth.py              # Login, token refresh, credential resolution
 ├── garmin_data.py              # Core metrics: sleep, HRV, Body Battery, activities
 ├── garmin_data_extended.py     # VO2max, training readiness, endurance score
+├── garmin_calendar.py          # Calendar: trips, races, events + trip create/update/delete
 ├── garmin_activity_files.py    # FIT/GPX download and analysis
 ├── garmin_query.py             # Time-based queries
 └── garmin_chart.py             # HTML dashboard generation
