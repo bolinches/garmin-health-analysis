@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.6.1 (2026-10-17)
+
+### Listing: distinguish the fork from upstream in the name and summary
+
+ClawHub builds the listing header from the skill's frontmatter, not its body:
+`--name` sets the display name, and the `description:` field becomes the
+summary. Both were byte-identical to upstream `eversonl/garmin-health-analysis`
+(stuck at 1.2.2), so the only thing telling the two listings apart was the
+version number.
+
+- Display name is now **Garmin Health Analysis (Maintained Fork)**.
+- The summary now leads with what this fork adds over 1.2.2: the Garmin
+  calendar, confirmation-gated Jet Lag trips, and the extended metric tables.
+
+No code change. Also fixed an em dash in the README quote line.
+
 ## v1.6.0 (2026-10-17)
 
 ### Security: confirmation gate on destructive trip operations

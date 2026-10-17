@@ -1,7 +1,7 @@
 # Garmin Health Analysis
 
 > Talk to your Garmin data naturally. Sleep, HRV, Body Battery, training
-> readiness, activity splits, and the Garmin calendar — trips, races and events.
+> readiness, activity splits, and the Garmin calendar: trips, races and events.
 
 **Forked from [eversonl/ClawdBot-garmin-health-analysis](https://github.com/eversonl/ClawdBot-garmin-health-analysis).**
 The original was a solid start but had gone quiet for over six months

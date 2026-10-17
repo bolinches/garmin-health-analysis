@@ -1,7 +1,7 @@
 ---
 name: garmin-health-analysis
-description: Talk to your Garmin data naturally - "what was my fastest speed snowboarding?", "how did I sleep last night?", "what was my heart rate at 3pm?". Access 20+ metrics (sleep stages, Body Battery, HRV, VO2 max, training readiness, body composition, SPO2), download FIT/GPX files for route analysis, query elevation/pace at any point, and generate interactive health dashboards. From casual "show me this week's workouts" to deep "analyze my recovery vs training load".
-version: 1.6.0
+description: Actively maintained fork of eversonl's original, which stopped at 1.2.2. Adds the Garmin calendar (races, events, naps, weigh-ins), Jet Lag Adviser trips (create, replace, delete, confirmation-gated), and ten extra metric tables (training status, fitness age, intensity minutes, morning readiness, hydration, hill score, calories, lactate threshold, training load balance). Talk to your Garmin data naturally, about sleep, HRV, Body Battery, or your heart rate at any time. Downloads FIT/GPX, generates interactive dashboards.
+version: 1.6.1
 author: EversonL, bolinches
 homepage: https://github.com/bolinches/garmin-health-analysis
 metadata: {"clawdbot":{"emoji":"⌚","requires":{"env":["GARMIN_EMAIL","GARMIN_PASSWORD"]},"install":[{"id":"garminconnect","kind":"python","package":"garminconnect>=0.3.18","label":"Install garminconnect (pip)"},{"id":"fitparse","kind":"python","package":"fitparse","label":"Install fitparse (pip)"},{"id":"gpxpy","kind":"python","package":"gpxpy","label":"Install gpxpy (pip)"}]}}
@@ -466,7 +466,7 @@ When users ask for insights or want to understand their trends, use `references/
 
 - **Created**: 2026-01-25
 - **Authors**: EversonL (original), bolinches (fork and extensions)
-- **Version**: 1.6.0
+- **Version**: 1.6.1
 - **Dependencies**: garminconnect (>=0.3.18), curl_cffi, fitparse, gpxpy
 - **License**: Apache 2.0
 - **Trip API**: requires `garminconnect >= 0.3.18` (Jet Lag Adviser trips; that
