@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.5.1 (2026-10-17)
+
+### Docs: drop Clawdbot-era setup text
+
+The setup section still said "Clawdbot", pointed at `~/.clawdbot/clawdbot.json`
+and `~/.clawdbot/skills/`, and described "two different setups" in Clawdbot terms.
+That text renders as the skill page, so the listing read as an old clone. Now
+OpenClaw throughout, with the current config path and workspace layout.
+
 ## v1.5.0 (2026-10-17)
 
 ### ✈️ Jet Lag Adviser trips: read AND write
